@@ -7,7 +7,8 @@ defmodule Master do
 
   def init(unimap) do
     tagmap = Map.new()
-    {:ok, {unimap, tagmap}}
+    tweetfeed = []
+    {:ok, {unimap, tagmap, tweetfeed}}
   end
 
   def handle_cast({:publish, line}, _, state) do
@@ -21,11 +22,14 @@ defmodule Master do
 
     u2pmap = elem(state, 0)
     tagmap = elem(state, 1)
+    tweetfeed = elem(state, 2)
+
+    tweetfeed = [tweet|tweetfeed]
 
     if Map.has_key?(u2pmap, srcid) do
       #get the corresponding pid
       corrid = Map.get(u2pmap, srcid)
-      GenServer.cast(corrid, tweet)
+      GenServer.cast(corrid, {:publish, tweet})
     else
       IO.puts("User not registered. Enter proper ID")
     end
@@ -42,6 +46,23 @@ defmodule Master do
       end)
     end
 
-    {:noreply, {u2pmap, tagmap}}
+    {:noreply, {u2pmap, tagmap, tweetfeed}}
+  end
+
+  def handle_cast({:subscribe, line}, _, state) do
+    u2pmap = elem(state, 0)
+
+    srcid = elem(line, 1)
+    subid = elem(line, 2)
+
+    if Map.has_key?(u2pmap, srcid) do
+      #get the corresponding pid
+      corrid = Map.get(u2pmap, srcid)
+      GenServer.cast(corrid, {:add_subscriber, subid})
+    else
+      IO.puts("User not registered. Enter proper ID")
+    end
+
+
   end
 end
