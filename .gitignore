@@ -8,9 +8,3 @@ erl_crash.dump
 *.beam
 /config/*.secret.exs
 .elixir_ls/
-.idea/encodings.xml
-.idea/modules.xml
-.idea/workspace.xml
-.idea/misc.xml
-twitter.iml
-.idea/vcs.xml
