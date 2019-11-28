@@ -6,8 +6,11 @@ defmodule TwitterTest do
     #tweet may contain mentions and hashtags
 
     lines = [["publish", "1", "I am 1 @2 #loser"],
-    ["publish", "2", "Hello #loser @1"],
-    ["publish", "3", "I am 3"]]
+    ["publish", "2", "Hello #loser #winner @1"],
+    ["search", "#loser"],
+    ["search", "#winner"],
+    ["publish", "3", "I am 3"],
+    ["subscribe", "2", "1"]]
     #retweets latest tweet from another user
     #{"retweet", "originalid", "currid"}}
     args = []

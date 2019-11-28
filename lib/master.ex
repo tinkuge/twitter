@@ -36,14 +36,14 @@ defmodule Master do
     end
 
     #log the tweet to its corresponding hashtag map
-    if length(hashtags) > 0 do
-      Enum.each(hashtags, fn(x) ->
+    tagmap = if length(hashtags) > 0 do
+      Enum.reduce(hashtags, %{}, fn(x,acc) ->
         #returns an empty list if the map doesn't have the hashtag
         corrlist = Map.get(tagmap, x, [])
-        corrlist = [x|corrlist]
+        corrlist = [tweet|corrlist]
         #overwrites the existing value with new value
         #which is a tweet appended to existing list of tweets
-        tagmap = Map.put(tagmap, x, corrlist)
+        Map.put(acc, x, corrlist)
       end)
     end
 
@@ -70,8 +70,7 @@ defmodule Master do
   def handle_cast({:search, line}, state) do
     tagmap = elem(state, 1)
 
-    tw_list = String.split(line, " ")
-    hashtag = Enum.at(tw_list, 1)
+    hashtag = Enum.at(line, 1)
     if Map.has_key?(tagmap, hashtag) do
       hashtweets = Map.get(tagmap, hashtag)
       numtweets = length(hashtweets)
@@ -84,6 +83,7 @@ defmodule Master do
       IO.puts("No tweets containing hashtag #{hashtag}")
     end
 
+    {:noreply, state}
   end
 
   def handle_cast({:retweet, line}, state) do
