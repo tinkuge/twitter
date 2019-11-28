@@ -7,8 +7,7 @@ defmodule TwitterTest do
 
     lines = [["publish", "1", "I am 1 @2 #loser"],
     ["publish", "2", "Hello #loser @1"],
-    ["publish", "3", "I am 3"],
-    ["search", "#loser"]]
+    ["publish", "3", "I am 3"]]
     #retweets latest tweet from another user
     #{"retweet", "originalid", "currid"}}
     args = []

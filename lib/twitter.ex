@@ -1,7 +1,12 @@
 defmodule Twitter do
   use GenServer
+  #@unimap
+  use GenServer
   def main(args) do
     IO.inspect(args)
+
+
+
     numuser = Enum.at(args, 0) |> String.to_integer()
     nummsg = Enum.at(args, 1) |> String.to_integer()
     lines = Enum.at(args, 2)
@@ -58,9 +63,6 @@ defmodule Twitter do
 
         "subscribe" ->
           GenServer.cast(mastpid, {:subscribe, i})
-
-        "search" ->
-          GenServer.cast(mastpid, {:search, i})
       end
     end
 
@@ -106,5 +108,38 @@ defmodule Twitter do
 
   #     read_from_console(unimap)
   #   end
+  # end
 
+  #maintain a map
+
+  def rcv_tweet_args(args, unimap) do
+    #Assuming you receive a list of lists
+    #[[publish, .. , ], [subscribe, ....]]
+    #less interactive version
+
+    for i <- args do
+      command = elem(i, 0)
+      case command do
+        "publish" ->
+          publish(i, unimap)
+      end
+    end
+
+  end
+
+  @spec publish(Tuple, Map) :: [any]
+  def publish(line, unimap) do
+    #tup = List.to_tuple(tup)
+    pubid = elem(line, 1)
+    tweet = elem(line, 2)
+    IO.puts(tweet)
+    #tw_list is a list of strings
+    tw_list = String.split(tweet, " ")
+
+    #optimize this so that it only traverses through the list once
+    mentions = Enum.filter(tw_list, fn(x) -> String.starts_with?(x, "@") end)
+    hashtags = Enum.filter(tw_list, fn(x) -> String.starts_with?(x, "#") end)
+
+
+  end
 end
