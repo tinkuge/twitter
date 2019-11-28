@@ -1,4 +1,5 @@
 defmodule Twitter do
+  use GenServer
   #@unimap
   use GenServer
   def main(args) do
