@@ -21,7 +21,7 @@ defmodule User do
     {:ok, {num_msg, unum,subscriberids, subscriptionids, sub_tweets, mention_tweets}}
   end
 
-  def handle_call(msg,_, {num_msg, unum,subscriberids, subscriptionids, sub_tweets, mention_tweets}) do
+  def handle_call(msg,_,{num_msg, unum,subscriberids, subscriptionids, sub_tweets, mention_tweets}) do
     unimap = elem(msg, 0)
     parid = elem(msg, 1)
     selfid = elem(msg, 2)
@@ -31,7 +31,7 @@ defmodule User do
     {:reply, :ok, newstate}
   end
 
-  def handle_cast({:publish, tweet}, _,
+  def handle_cast({:publish, tweet},
     {num_msg, uid, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
     tw_list = String.split(tweet, " ")
 
@@ -44,7 +44,7 @@ defmodule User do
     if length(mentions) > 0 do
       Enum.each(mentions, fn(x) ->
         destpid = Map.get(unimap, x)
-        GenServer.cast(destpid, {:mention, tweet})
+        GenServer.cast(destpid, {:mention, tweet, uid})
       end)
     end
 
@@ -53,7 +53,7 @@ defmodule User do
 
       Enum.each(subscriberids, fn(x) ->
         destpid = Map.get(unimap, x)
-        GenServer.cast(destpid, {:sub_tweet, tweet})
+        GenServer.cast(destpid, {:sub_tweet, tweet, uid})
       end)
     end
 
@@ -64,7 +64,7 @@ defmodule User do
 
   end
 
-  def handle_cast({:mention, tweet}, from,
+  def handle_cast({:mention, tweet, from},
   {num_msg, uid, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
 
     IO.inspect("#{from} mentioned #{uid}", label: "#{uid}")
@@ -74,7 +74,7 @@ defmodule User do
   end
 
   #Adds an id to the subscriber list
-  def handle_cast({:add_subscriber, subid}, _from,
+  def handle_cast({:add_subscriber, subid},
   {num_msg, uid, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}
   ) do
     subscriberids = [subid|subscriberids]
@@ -82,7 +82,7 @@ defmodule User do
   end
 
   #receive tweet from subcription
-  def handle_cast({:sub_tweet, tweet}, from,
+  def handle_cast({:sub_tweet, tweet, from},
   {num_msg, uid, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
 
     IO.inspect("Received subcribed tweet from #{from}", label: "#{uid}")

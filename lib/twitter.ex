@@ -3,8 +3,11 @@ defmodule Twitter do
   def main(args) do
     IO.inspect(args)
 
+
+
     numuser = Enum.at(args, 0) |> String.to_integer()
     nummsg = Enum.at(args, 1) |> String.to_integer()
+    lines = Enum.at(args, 2)
 
     if(numuser <= 0 || !is_integer(numuser)) do
       IO.puts("Wrong numusers! Please choose a integer value greater than 0.")
@@ -42,11 +45,30 @@ defmodule Twitter do
     end
 
     #initiate master
-    mastpid = Master.start_link(unimap)
+    mastup = Master.start_link(unimap)
+
+    mastpid = elem(mastup, 1)
+
+    IO.puts("Feed: \n")
+
+    for i <- lines do
+      command = Enum.at(i, 0)
+
+      case command do
+        "publish" ->
+          #Master.publish(mastpid, {:publish, i})
+          GenServer.cast(mastpid, {:publish, i})
+
+        "subscribe" ->
+          GenServer.cast(mastpid, {:subscribe, i})
+      end
+    end
 
     #read_from_console(unimap)
 
-    IO.puts("Feed: \n")
+
+
+    :ok
 
   end
 

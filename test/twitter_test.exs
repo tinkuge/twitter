@@ -5,13 +5,12 @@ defmodule TwitterTest do
   test "greets the world" do
     #tweet may contain mentions and hashtags
 
-    lines = {{"publish", "uid", "tweet"},
-    {"subscribe", "parid", "destid"},
+    lines = [["publish", "1", "I am 1"],
+    ["publish", "2", "Hello"],
+    ["publish", "3", "I am 3"]]
     #retweets latest tweet from another user
-    {"retweet", "originalid", "currid"}}
+    #{"retweet", "originalid", "currid"}}
     args = []
-    usepidmap = Twitter.main(args)
-    # assert Twitter.
-    assert Twitter.hello() == :world
+    assert Twitter.main(["10", "10", lines]) == :ok
   end
 end
