@@ -19,7 +19,7 @@ defmodule Master do
 
     hashtags = Enum.filter(tw_list, fn(x) -> String.starts_with?(x, "#") end)
 
-    IO.puts("Calling #{srcid}")
+    #IO.puts("Calling #{srcid}")
     u2pmap = elem(state, 0)
     tagmap = elem(state, 1)
     tweetfeed = elem(state, 2)
@@ -53,8 +53,8 @@ defmodule Master do
   def handle_cast({:subscribe, line}, state) do
     u2pmap = elem(state, 0)
 
-    srcid = Enum.at(line, 1)
-    subid = Enum.at(line, 2)
+    srcid = Enum.at(line, 1) |> String.to_integer()
+    subid = Enum.at(line, 2) |> String.to_integer()
 
     if Map.has_key?(u2pmap, srcid) do
       #get the corresponding pid
@@ -66,4 +66,29 @@ defmodule Master do
 
     {:noreply, state}
   end
+
+  def handle_cast({:search, line}, state) do
+    tagmap = elem(state, 1)
+
+    tw_list = String.split(line, " ")
+    hashtag = Enum.at(tw_list, 1)
+    if Map.has_key?(tagmap, hashtag) do
+      hashtweets = Map.get(tagmap, hashtag)
+      numtweets = length(hashtweets)
+      IO.puts("Number of tweets with #{hashtag}: #{numtweets}")
+      for i <- hashtweets do
+        IO.puts(i)
+      end
+
+    else
+      IO.puts("No tweets containing hashtag #{hashtag}")
+    end
+
+  end
+
+  def handle_cast({:retweet, line}, state) do
+
+  end
+
+
 end

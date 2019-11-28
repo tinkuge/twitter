@@ -1,5 +1,6 @@
 defmodule Twitter do
   #@unimap
+  use GenServer
   def main(args) do
     IO.inspect(args)
 
