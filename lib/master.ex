@@ -11,19 +11,15 @@ defmodule Master do
     {:ok, {unimap, tagmap, tweetfeed}}
   end
 
-  def publish(pid, {:publish, line}) do
-    GenServer.cast(pid, {:publish, line})
-  end
 
   def handle_cast({:publish, line}, state) do
-    srcid = Enum.at(line, 1)
+    srcid = Enum.at(line, 1) |> String.to_integer()
     tweet = Enum.at(line, 2)
-
     tw_list = String.split(tweet, " ")
 
     hashtags = Enum.filter(tw_list, fn(x) -> String.starts_with?(x, "#") end)
 
-
+    IO.puts("Calling #{srcid}")
     u2pmap = elem(state, 0)
     tagmap = elem(state, 1)
     tweetfeed = elem(state, 2)
@@ -33,6 +29,7 @@ defmodule Master do
     if Map.has_key?(u2pmap, srcid) do
       #get the corresponding pid
       corrid = Map.get(u2pmap, srcid)
+
       GenServer.cast(corrid, {:publish, tweet})
     else
       IO.puts("User not registered. Enter proper ID")

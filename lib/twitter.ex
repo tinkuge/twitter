@@ -49,7 +49,7 @@ defmodule Twitter do
 
     mastpid = elem(mastup, 1)
 
-    IO.puts("Feed: \n")
+    IO.puts("\nFeed: \n")
 
     for i <- lines do
       command = Enum.at(i, 0)
@@ -65,6 +65,10 @@ defmodule Twitter do
     end
 
     #read_from_console(unimap)
+
+    currid = self()
+
+    IO.puts("All tweets printed")
 
 
 

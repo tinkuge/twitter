@@ -37,7 +37,7 @@ defmodule User do
 
     #optimize this so that it only traverses through the list once
     mentions = Enum.filter(tw_list, fn(x) -> String.starts_with?(x, "@") end)
-
+    IO.puts("Inside publish of #{uid}")
     IO.inspect(tweet, label: "#{uid}")
 
     #push the tweet to mentions
