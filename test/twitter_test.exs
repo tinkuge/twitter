@@ -10,9 +10,14 @@ defmodule TwitterTest do
     ["search", "#covfefe"],
     ["search", "#hamberder"],
     ["publish", "3", "I am 3"],
-    ["subscribe", "2", "1"], ["publish", "2", "I am a #hamberder"],
-    ["delete", "1"],["publish", "0", "Hello world"],["retweet", "2", "3"],
-    #[""],[]
+    ["subscribe", "2", "1"],
+    ["publish", "2", "I am a #hamberder"],
+    ["delete", "1"],
+    ["subscribe", "0", "2"],
+    ["publish", "0", "Hello world"],
+    ["retweet", "2", "3"],
+    ["mention_tweets", "2"],
+    ["subtweets", "2"]
     ]
     #retweets latest tweet from another user
     #{"retweet", "originalid", "currid"}}

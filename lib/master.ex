@@ -118,7 +118,7 @@ defmodule Master do
 
     if delpid != nil do
       GenServer.stop(delpid, :normal)
-      IO.inspect("User #{userid} deleted their account", label: "Master: ")
+      IO.inspect("User #{userid} deleted their account", label: "Master")
     end
 
     unimap = Map.delete(unimap, userid)
@@ -147,7 +147,7 @@ defmodule Master do
   end
 
   def handle_cast({:subtweets, line}, {unimap, tagmap, tweetfeed}) do
-    id = Enum.at(line, 1)
+    id = Enum.at(line, 1) |> String.to_integer()
 
     if Map.has_key?(unimap, id) do
       corrpid = Map.get(unimap, id)

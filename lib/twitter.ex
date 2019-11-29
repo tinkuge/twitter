@@ -76,6 +76,9 @@ defmodule Twitter do
 
         "mention_tweets" ->
           GenServer.cast(mastpid, {:mtweets, i})
+
+        "subtweets" ->
+          GenServer.cast(mastpid, {:subtweets, i})
       end
     end
 

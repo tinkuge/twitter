@@ -37,40 +37,46 @@ defmodule User do
 
   def handle_cast({:publish, tweet},
     {num_msg, uid, self_tweet_feed,subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
-    tw_list = String.split(tweet, " ")
 
-    #optimize this so that it only traverses through the list once
-    mentions = Enum.filter(tw_list, fn(x) -> String.starts_with?(x, "@") end)
 
-    #IO.puts("Inside publish of #{uid}")
-    self_tweet_feed = [tweet|self_tweet_feed]
-    IO.inspect(tweet, label: "#{uid}")
+    if num_msg != 0 do
+      tw_list = String.split(tweet, " ")
 
-    #push the tweet to mentions
-    if length(mentions) > 0 do
-      Enum.each(mentions, fn(x) ->
-        #get the id in appropriate format
-        splitlist = String.split(x, "@")
-        int_uid = Enum.at(splitlist, 1) |> String.to_integer()
-        destpid = Map.get(unimap, int_uid)
-        GenServer.cast(destpid, {:mention, tweet, uid})
-      end)
+      #optimize this so that it only traverses through the list once
+      mentions = Enum.filter(tw_list, fn(x) -> String.starts_with?(x, "@") end)
+
+      #IO.puts("Inside publish of #{uid}")
+      self_tweet_feed = [tweet|self_tweet_feed]
+      IO.inspect(tweet, label: "#{uid}")
+
+      #push the tweet to mentions
+      if length(mentions) > 0 do
+        Enum.each(mentions, fn(x) ->
+          #get the id in appropriate format
+          splitlist = String.split(x, "@")
+          int_uid = Enum.at(splitlist, 1) |> String.to_integer()
+          destpid = Map.get(unimap, int_uid)
+          GenServer.cast(destpid, {:mention, tweet, uid})
+        end)
+      end
+
+      #push the tweet to subscribers
+      if length(subscriberids) > 0 do
+
+        Enum.each(subscriberids, fn(x) ->
+          #get the id in appropriate format
+          destpid = Map.get(unimap, x)
+          GenServer.cast(destpid, {:sub_tweet, tweet, uid})
+        end)
+      end
+
+      num_msg = num_msg - 1
+      {:noreply, {num_msg, uid, self_tweet_feed,subscriberids,subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
+
+    else
+      IO.inspect("Sorry, the user has reached max number of messages", label: "#{uid}")
+      {:noreply, {num_msg, uid, self_tweet_feed,subscriberids,subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
     end
-
-    #push the tweet to subscribers
-    if length(subscriberids) > 0 do
-
-      Enum.each(subscriberids, fn(x) ->
-        #get the id in appropriate format
-        destpid = Map.get(unimap, x)
-        GenServer.cast(destpid, {:sub_tweet, tweet, uid})
-      end)
-    end
-
-    num_msg = num_msg - 1
-
-    {:noreply, {num_msg, uid, self_tweet_feed,subscriberids,subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
-
 
   end
 
@@ -112,14 +118,22 @@ defmodule User do
   end
 
   def handle_cast({:last_tweet, reid}, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
-    last_tweet = List.first(self_tweet_feed)
-    if Map.has_key?(unimap, reid) do
-      corrpid = Map.get(unimap, reid)
-      GenServer.cast(corrpid, {:retweet, uid,last_tweet})
+
+    if length(self_tweet_feed) > 0 do
+      last_tweet = List.first(self_tweet_feed)
+      if Map.has_key?(unimap, reid) do
+        corrpid = Map.get(unimap, reid)
+        GenServer.cast(corrpid, {:retweet, uid,last_tweet})
+
+      else
+        IO.inspect("The user #{reid} does not exist in the system", label: "Master")
+      end
 
     else
-      IO.inspect("The user #{reid} does not exist in the system", label: "Master")
+      IO.inspect("The user #{uid} has no tweets of its own", label: "#{uid}")
     end
+
+
 
     {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
   end
@@ -138,20 +152,33 @@ defmodule User do
 
   def handle_cast(:get_mention_tweets, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
 
-    IO.puts("Tweets in which #{uid} is mentioned: \n")
-    for i <- mention_tweets do
-      IO.puts(i)
-      IO.puts("\n")
+
+
+    if length(mention_tweets) > 0 do
+      IO.puts("Tweets in which #{uid} is mentioned:")
+      for i <- mention_tweets do
+        IO.puts(i)
+      end
+
+    else
+      IO.inspect("User #{uid} has no tweets mentioning them", label: "#{uid}")
     end
+
+
 
     {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
   end
 
   def handle_cast(:get_subtweets, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
-    IO.puts("Subscribed tweets of #{uid}: \n")
-    for i <- sub_tweets do
-      IO.puts(i)
-      IO.puts("\n")
+
+    if length(sub_tweets) > 0 do
+      IO.puts("Subscribed tweets of #{uid}:")
+      for i <- sub_tweets do
+        IO.puts(i)
+      end
+
+    else
+      IO.inspect("User #{uid} has no subscribed tweets", label: "#{uid}")
     end
 
     {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
