@@ -94,23 +94,31 @@ defmodule Master do
     {:noreply, state}
   end
 
-  def handle_cast({:retweet, line}, state) do
+  def handle_cast({:retweet, line}, {unimap, tagmap, tweetfeed}) do
     srcid = Enum.at(line, 1) |> String.to_integer()
     reid = Enum.at(line, 2) |> String.to_integer()
 
     #Call the genserver of the reid so that it can pull the latest tweet from source and retweet it
-    GenServer.cast(srcid, {:last_tweet, reid})
+    if Map.has_key?(unimap, srcid) do
+      corrpid = Map.get(unimap, srcid)
+      GenServer.cast(corrpid, {:last_tweet, reid})
 
-    {:noreply, state}
+    else
+      IO.inspect("The user #{srcid} does not exist in the system", label: "Master")
+    end
+
+
+    {:noreply, {unimap, tagmap, tweetfeed}}
   end
 
   def handle_cast({:delete, line},{unimap, tagmap, tweetfeed}) do
 
-    userid = Enum.at(line, 1)
+    userid = Enum.at(line, 1) |> String.to_integer()
     delpid = Map.get(unimap, userid)
 
     if delpid != nil do
       GenServer.stop(delpid, :normal)
+      IO.inspect("User #{userid} deleted their account", label: "Master: ")
     end
 
     unimap = Map.delete(unimap, userid)

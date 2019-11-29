@@ -32,7 +32,7 @@ defmodule User do
     subscriberids = List.delete(subscriberids, delid)
     subcriptions = List.delete(subcriptions, delid)
 
-    {:ok, {num_msg, uid, self_tweet_feed,subscriberids, subcriptions, sub_tweets,mention_tweets, updmap, parid, selfid}}
+    {:reply, :ok, {num_msg, uid, self_tweet_feed,subscriberids, subcriptions, sub_tweets,mention_tweets, updmap, parid, selfid}}
   end
 
   def handle_cast({:publish, tweet},
@@ -113,7 +113,13 @@ defmodule User do
 
   def handle_cast({:last_tweet, reid}, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
     last_tweet = List.first(self_tweet_feed)
-    GenServer.cast(reid, {:retweet, uid,last_tweet})
+    if Map.has_key?(unimap, reid) do
+      corrpid = Map.get(unimap, reid)
+      GenServer.cast(corrpid, {:retweet, uid,last_tweet})
+
+    else
+      IO.inspect("The user #{reid} does not exist in the system", label: "Master")
+    end
 
     {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
   end
