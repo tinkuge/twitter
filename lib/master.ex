@@ -36,7 +36,7 @@ defmodule Master do
     end
 
     #log the tweet to its corresponding hashtag map
-    tagmap = if length(hashtags) > 0 do
+    accmap = if length(hashtags) > 0 do
       Enum.reduce(hashtags, %{}, fn(x,acc) ->
         #returns an empty list if the map doesn't have the hashtag
         corrlist = Map.get(tagmap, x, [])
@@ -46,6 +46,14 @@ defmodule Master do
         Map.put(acc, x, corrlist)
       end)
     end
+
+    tagmap = if accmap != nil do
+      accmap
+    else
+      tagmap
+    end
+
+    #IO.inspect(tagmap, label: "Tagmap")
 
     {:noreply, {u2pmap, tagmap, tweetfeed}}
   end
@@ -87,7 +95,61 @@ defmodule Master do
   end
 
   def handle_cast({:retweet, line}, state) do
+    srcid = Enum.at(line, 1) |> String.to_integer()
+    reid = Enum.at(line, 2) |> String.to_integer()
 
+    #Call the genserver of the reid so that it can pull the latest tweet from source and retweet it
+    GenServer.cast(srcid, {:last_tweet, reid})
+
+    {:noreply, state}
+  end
+
+  def handle_cast({:delete, line},{unimap, tagmap, tweetfeed}) do
+
+    userid = Enum.at(line, 1)
+    delpid = Map.get(unimap, userid)
+
+    if delpid != nil do
+      GenServer.stop(delpid, :normal)
+    end
+
+    unimap = Map.delete(unimap, userid)
+
+    vals = Map.values(unimap)
+
+    for i <- vals do
+      GenServer.call(i, {:update_state, unimap, userid}, :infinity)
+    end
+
+    {:noreply, {unimap, tagmap, tweetfeed}}
+  end
+
+  def handle_cast({:mtweets, line}, {unimap, tagmap, tweetfeed}) do
+    id = Enum.at(line, 1) |> String.to_integer()
+
+    if Map.has_key?(unimap, id) do
+      corrpid = Map.get(unimap, id)
+      GenServer.cast(corrpid, :get_mention_tweets)
+
+    else
+      IO.inspect("The user #{id} does not exist in the system", label: "Master")
+    end
+
+    {:noreply, {unimap, tagmap, tweetfeed}}
+  end
+
+  def handle_cast({:subtweets, line}, {unimap, tagmap, tweetfeed}) do
+    id = Enum.at(line, 1)
+
+    if Map.has_key?(unimap, id) do
+      corrpid = Map.get(unimap, id)
+      GenServer.cast(corrpid, :get_subtweets)
+
+    else
+      IO.inspect("The user #{id} does not exist in the system", label: "Master")
+    end
+
+    {:noreply, {unimap, tagmap, tweetfeed}}
   end
 
 

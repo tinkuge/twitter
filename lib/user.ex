@@ -21,14 +21,18 @@ defmodule User do
     {:ok, {num_msg, unum, self_tweet_feed,subscriberids, subscriptionids, sub_tweets, mention_tweets}}
   end
 
-  def handle_call(msg,_,{num_msg, unum, self_tweet_feed,subscriberids, subscriptionids, sub_tweets, mention_tweets}) do
-    unimap = elem(msg, 0)
-    parid = elem(msg, 1)
-    selfid = elem(msg, 2)
+  def handle_call({unimap, parid, selfid},_,{num_msg, unum, self_tweet_feed,subscriberids, subscriptionids, sub_tweets, mention_tweets}) do
 
     newstate = {num_msg, unum,self_tweet_feed,subscriberids, subscriptionids, sub_tweets, mention_tweets,unimap, parid, selfid}
 
     {:reply, :ok, newstate}
+  end
+
+  def handle_call({:update_state, updmap, delid}, _, {num_msg, uid, self_tweet_feed,subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
+    subscriberids = List.delete(subscriberids, delid)
+    subcriptions = List.delete(subcriptions, delid)
+
+    {:ok, {num_msg, uid, self_tweet_feed,subscriberids, subcriptions, sub_tweets,mention_tweets, updmap, parid, selfid}}
   end
 
   def handle_cast({:publish, tweet},
@@ -83,7 +87,15 @@ defmodule User do
   def handle_cast({:add_subscriber, subid},
   {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}
   ) do
+    IO.inspect("Received a subscriber: User #{subid}",label: "#{uid}")
     subscriberids = [subid|subscriberids]
+    {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
+  end
+
+  #Add the userid to which current user is subscribed to
+  def handle_cast({:subscription, superid}, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
+    subcriptions = [superid|subcriptions]
+
     {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
   end
 
@@ -92,11 +104,51 @@ defmodule User do
   {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
 
     IO.inspect("Received subcribed tweet from #{from}", label: "#{uid}")
+    IO.inspect("Subscribed tweet: #{tweet}", label: "#{uid}")
     sub_tweets = [tweet|sub_tweets]
 
     {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
 
   end
 
+  def handle_cast({:last_tweet, reid}, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
+    last_tweet = List.first(self_tweet_feed)
+    GenServer.cast(reid, {:retweet, uid,last_tweet})
+
+    {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
+  end
+
+  def handle_cast({:retweet, srcid, tweet}, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
+    IO.inspect("retweeted #{srcid}: #{tweet}", label: "#{uid}")
+
+    {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
+  end
+
+  # def handle_cast({:get_feed, feed}, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
+  #   IO.inspect(feed)
+
+  #   {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
+  # end
+
+  def handle_cast(:get_mention_tweets, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
+
+    IO.puts("Tweets in which #{uid} is mentioned: \n")
+    for i <- mention_tweets do
+      IO.puts(i)
+      IO.puts("\n")
+    end
+
+    {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
+  end
+
+  def handle_cast(:get_subtweets, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
+    IO.puts("Subscribed tweets of #{uid}: \n")
+    for i <- sub_tweets do
+      IO.puts(i)
+      IO.puts("\n")
+    end
+
+    {:noreply, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
+  end
 
 end

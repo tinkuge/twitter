@@ -10,7 +10,8 @@ defmodule TwitterTest do
     ["search", "#loser"],
     ["search", "#winner"],
     ["publish", "3", "I am 3"],
-    ["subscribe", "2", "1"]]
+    ["subscribe", "2", "1"], ["publish", "2", "I am a #winner"]
+    ]
     #retweets latest tweet from another user
     #{"retweet", "originalid", "currid"}}
     args = []

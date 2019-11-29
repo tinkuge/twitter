@@ -36,19 +36,21 @@ defmodule Twitter do
     unimap = Map.new(tuplist)
 
     pidlist = Map.values(unimap)
-    curpid = self()
-
-    #Update the states of each node
-
-    for i <- pidlist do
-      #infinite timeout to aid with debugging
-      GenServer.call(i, {unimap, curpid, i}, :infinity)
-    end
+    #curpid = self()
 
     #initiate master
     mastup = Master.start_link(unimap)
 
     mastpid = elem(mastup, 1)
+
+    #Update the states of each node
+
+    for i <- pidlist do
+      #infinite timeout to aid with debugging
+      GenServer.call(i, {unimap, mastpid, i}, :infinity)
+    end
+
+
 
     IO.puts("\nFeed: \n")
 
@@ -65,6 +67,15 @@ defmodule Twitter do
 
         "search" ->
           GenServer.cast(mastpid, {:search, i})
+
+        "retweet" ->
+          GenServer.cast(mastpid, {:retweet, i})
+
+        "delete" ->
+          GenServer.cast(mastpid, {:delete, i})
+
+        "mention_tweets" ->
+          GenServer.cast(mastpid, {:mtweets, i})
       end
     end
 
