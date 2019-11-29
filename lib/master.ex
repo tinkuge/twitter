@@ -84,7 +84,7 @@ defmodule Master do
       numtweets = length(hashtweets)
       IO.puts("Number of tweets with #{hashtag}: #{numtweets}")
       for i <- hashtweets do
-        IO.puts(i)
+        IO.puts("#{hashtag}: #{i}")
       end
 
     else

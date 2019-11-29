@@ -74,7 +74,7 @@ defmodule User do
       {:noreply, {num_msg, uid, self_tweet_feed,subscriberids,subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
 
     else
-      IO.inspect("Sorry, the user has reached max number of messages", label: "#{uid}")
+      IO.inspect("Sorry, the user has reached max number of tweets they can tweet. Pay $100 to unlock additional tweeting", label: "#{uid}")
       {:noreply, {num_msg, uid, self_tweet_feed,subscriberids,subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}}
     end
 
@@ -155,9 +155,9 @@ defmodule User do
 
 
     if length(mention_tweets) > 0 do
-      IO.puts("Tweets in which #{uid} is mentioned:")
+      #IO.puts("Tweets in which #{uid} is mentioned:")
       for i <- mention_tweets do
-        IO.puts(i)
+        IO.inspect("Mention: #{i}", label: "#{uid}")
       end
 
     else
@@ -172,9 +172,9 @@ defmodule User do
   def handle_cast(:get_subtweets, {num_msg, uid, self_tweet_feed, subscriberids, subcriptions, sub_tweets,mention_tweets, unimap, parid, selfid}) do
 
     if length(sub_tweets) > 0 do
-      IO.puts("Subscribed tweets of #{uid}:")
+      #IO.puts("Subscribed tweets of #{uid}:")
       for i <- sub_tweets do
-        IO.puts(i)
+        IO.inspect("SubTweets: #{i}", label: "#{uid}")
       end
 
     else

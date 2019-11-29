@@ -51,8 +51,10 @@ defmodule Twitter do
     end
 
 
+    begintime = Time.utc_now()
 
     IO.puts("\nFeed: \n")
+
 
     for i <- lines do
       command = Enum.at(i, 0)
@@ -82,11 +84,21 @@ defmodule Twitter do
       end
     end
 
+    Process.sleep(500)
+
     #read_from_console(unimap)
 
     currid = self()
 
     IO.puts("All tweets printed")
+
+    endtime = Time.utc_now()
+
+    totaltime = Time.diff(endtime, begintime, :millisecond)
+
+    totaltime = totaltime - 500
+
+    IO.puts("Total time to completion: #{totaltime} ms")
 
 
 
